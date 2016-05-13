@@ -1,0 +1,148 @@
+{block content}
+<section class="content-header">
+	<h1>Stroje</h1>
+	<ol class="breadcrumb">
+		<li><a href="#"><i class="fa fa-dashboard"></i> AGSS</a></li>
+	</ol>
+</section>
+
+<section class="content">
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="box">
+				<div class="box-header">
+					<h3 class="box-title">
+						Stroj: {$machine->description} ({$machine->mac_address})
+						<a href="#" data-toggle="modal" data-target="#editMachineModal"><i class="fa fa-pencil"></i></a>
+					</h3>
+					<div class="game-selector pull-right">
+						<select onchange="window.location = $(this).find('option:selected').val()">
+							<option n:foreach="$machines as $row" value="{link default $row->id}" {if $row->id == $machine->id}selected{/if}>{$row->description}</option>
+						</select>
+					</div>
+				</div>
+				<div class="box-body clearfix">
+					<div class="col-lg-3">
+						<div class="small-box bg-orange">
+							<div class="inner">
+								<h3>
+									{$spinCount->count|formatFloat}
+								</h3>
+								<p>
+									Počet odohratých hier
+								</p>
+							</div>
+							<div class="icon">
+								<i class="ion ion-game-controller-a"></i>
+							</div>
+						</div>
+					</div>
+								
+					<div class="col-lg-3">
+						<div class="small-box bg-green">
+							<div class="inner">
+								<h3>
+									{$deposits->sum/ 100|formatFloat} €
+								</h3>
+								<p>
+									Celkový objem vkladov
+								</p>
+							</div>
+							<div class="icon">
+								<i class="ion ion-arrow-up-a"></i>
+							</div>
+						</div>
+					</div>
+								
+					<div class="col-lg-3">
+						<div class="small-box bg-red">
+							<div class="inner">
+								<h3>
+									{$payouts->sum / 100|formatFloat}
+								</h3>
+								<p>
+									Celkový objem výberov
+								</p>
+							</div>
+							<div class="icon">
+								<i class="ion ion-arrow-down-a"></i>
+							</div>
+						</div>
+					</div>
+					
+					<div class="col-lg-12 margin-b10">
+						<table class="table table-bordered">
+							<tr>
+								<th>#</th>
+								<th>Používateľ</th>
+								<th>Vklad/výber</th>
+								<th>Dátum</th>
+								<th>Čas</th>
+							</tr>
+							<tr n:foreach="$transactions as $transaction">
+								<td>{$offset + $iterator->counter}.</td>
+								<td>{$transaction->user}</td>
+								<td>{$transaction->increase / 100|formatFloat} €</td>
+								<td>{$transaction->time|date:'%d.%m.%Y'}</td>
+								<td>{$transaction->time|date:'%H:%M:%S'}</td>
+							</tr>
+						</table>
+					</div>
+							
+					<div class="col-lg-12">
+						<div class="pull-left">Zobrazuje sa {$offset + 1}. až {$offset + $paginator->length}. záznam</div>
+						<div class="pull-right">
+							<div class="btn-group">
+								<a n:if="!$paginator->first" href="{link default $machine->id, $paginator->page - 1}" class="btn btn-default btn-sm">
+									<i class="fa fa-long-arrow-left"></i> Predchádzajúca
+								</a>
+								<a n:if="!$paginator->last" href="{link default $machine->id, $paginator->page + 1}" class="btn btn-default btn-sm">
+									Nasledujúca <i class="fa fa-long-arrow-right"></i>
+								</a>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</section>
+
+<div id="editMachineModal" class="modal fade" tabindex="-1" role="dialog">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-label="Zatvoriť"><span aria-hidden="true">&times;</span></button>
+				<h4 class="modal-title">Úprava stroja</h4>
+			</div>
+			{form editForm}
+			<div class="modal-body">
+				<div class="form-group">
+					{label description /}
+					{input description, class => 'form-control'}
+				</div>
+				<div class="form-group">
+					{label enabled /}
+					{input enabled, class => 'form-control'}
+				</div>
+				<div class="form-group">
+                    {label config /}
+                    {input config, class => 'form-control'}
+                </div>
+                <div class="form-group">
+                    {label config_game /}
+                    {input config_game, class => 'form-control'}
+                </div>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-default" data-dismiss="modal">Zatvoriť</button>
+				{input submit, class => 'btn btn-primary'}
+			</div>
+			{/form}
+		</div><!-- /.modal-content -->
+	</div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+{block script}
+
+{/block}

@@ -1,0 +1,118 @@
+{block content}
+<!-- Content Header (Page header) -->
+<section class="content-header">
+	<h1>Výhernostná tabuľka</h1>
+	<ol class="breadcrumb">
+		<li><a href="#"><i class="fa fa-dashboard"></i> AGSS</a></li>
+	</ol>
+</section>
+
+<section class="content">
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="box">
+				<div class="box-header">
+					<h3 class="box-title">Tabuľka pre hru {$gameName}</h3>
+					<div class="game-selector pull-right">
+						<select onchange="window.location = $(this).find('option:selected').val()">
+							<option n:foreach="$bets as $key => $value" value="{link default $gameId, $key}" {if $key == $currentBet}selected{/if}>{$value}</option>
+						</select>
+						<select onchange="window.location = $(this).find('option:selected').val()">
+							<option n:foreach="$games as $key => $name" value="{link default $key, $currentBet}" {if $key == $gameId}selected{/if}>{$name}</option>
+						</select>
+					</div>
+				</div>
+                <div class="box-body clearfix">
+					{snippet table}
+						{include '../flashes.latte'}
+						
+						<div n:foreach="$combinations as $symbol => $combs" class="win-combination col-lg-3">
+							<img src="{$basePath}/img/game-symbols/{$gameName}/{$symbol}.png">
+							<div class="numbers">
+							{foreach $combs as $comb}
+								<span class="symbol-count">
+									{$comb->symbol_count} x {$comb->win|formatFloat} €
+									<a href="{link removeCombination! $comb->id}" class="remove-comb"><i class="fa fa-times"></i></a>
+								</span>
+							{/foreach}
+							</div>
+						</div>
+						
+						<div class="win-combination col-lg-3">
+						{form winCombinationForm, class => 'form-inline'}
+							<div class="form-group">
+								{input symbol, class => 'hidden'}
+								<select id="symbol-ddslick">
+									<option n:foreach="$form[symbol]->items as $key => $value" value="{$key}" data-imagesrc="{$basePath}/img/game-symbols/{$gameName}/{$key}.png" data-description="Symbol č. {$value}">Symbol č. {$value}</option>
+								</select>
+							</div>
+							<div class="form-group pull-right">
+								{label symbolCount /}
+								{input symbolCount}<br>
+								{label win /}
+								{input win}
+							</div>
+							
+							{input submit, class => 'btn btn-primary'}
+						{/form}
+						</div>
+					{/snippet}
+                </div><!-- /.box-body -->
+            </div><!-- /.box -->
+        </div>
+    </div>
+</section><!-- /.content -->
+{/block}
+
+{block script}
+<script>
+$(document).ready(function() {
+	$(document).on("ifToggled", ".checkbox", function() {
+		var link = $(this).data("link");
+		$.nette.ajax(link).done(function () {
+			$("input[type='checkbox']").iCheck({
+				checkboxClass: 'icheckbox_minimal',
+				radioClass: 'iradio_minimal'
+			});
+		});
+	});
+	
+	$("#symbol-ddslick").ddslick({
+		width: '100%',
+		onSelected: function (selected) {
+			$("#frm-winCombinationForm-symbol option[value=" + selected.selectedData.value + "]").prop("selected", true);
+		}
+	});
+	
+	$(document).on("submit", "#frm-winCombinationForm", function(e) {
+		e.preventDefault();
+		var form = $(this);
+		
+		$.nette.ajax({
+			type: 'POST',
+			url: form.action,
+			data: form.serialize()
+		}).done(function() {
+			$("#symbol-ddslick").ddslick({
+				width: '100%',
+				onSelected: function (selected) {
+					$("#frm-winCombinationForm-symbol option[value=" + selected.selectedData.value + "]").prop("selected", true);
+				}
+			});
+		});
+	});
+	
+	$(document).on("click", ".remove-comb", function(e) {
+		e.preventDefault();
+		$.nette.ajax(this.href).done(function() {
+			$("#symbol-ddslick").ddslick({
+				width: '100%',
+				onSelected: function (selected) {
+					$("#frm-winCombinationForm-symbol option[value=" + selected.selectedData.value + "]").prop("selected", true);
+				}
+			});
+		});
+	});
+});
+</script>
+{/block}

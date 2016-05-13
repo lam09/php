@@ -1,0 +1,173 @@
+{block content}
+
+<style>
+table, th, td {
+    border: 1px solid black;
+    border-collapse: collapse;
+}
+</style>
+
+<!-- Content Header (Page header) -->
+<section class="content-header">
+	<h1>
+		Výherné línie
+	</h1>
+	<ol class="breadcrumb">
+		<li><a href="#"><i class="fa fa-dashboard"></i> AGSS</a></li>
+		<li class="active">Výherné línie</li>
+	</ol>
+</section>
+
+<section class="content">
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="box clearfix">
+                <div class="box-header">
+                    <h3 class="box-title">Výherné línie pre {$game['name']}</h3>
+					<div class="game-selector pull-right">
+						<select onchange="window.location = $(this).find('option:selected').val()">
+							<option n:foreach="$games as $key => $name" value="{link default $key}" {if $key == $game['id']}selected{/if}>{$name}</option>
+						</select>
+						<a href="#" class="btn btn-primary" data-toggle="modal" data-target="#new-line-modal"><i class="fa fa-plus"></i></a>
+					</div>
+                </div><!-- /.box-header -->
+
+                <div class="box-body">
+					
+				{include '../flashes.latte'}
+				
+				{snippet note}
+				<span style="margin-left: 10px">{$game['note']}</span> <a href="#" data-target="#editNoteModal" data-toggle="modal"><i class="fa fa-pencil"></i></a>
+				{/snippet}
+
+				{snippet lines}
+				<div class="clearfix">
+					<div n:foreach="$allLines as $key => $lines" class="line-box">
+						<table class="line-box-table">
+						{for $x = 0; $x < $rows; $x++}
+							<tr>
+								{for $y = 0; $y < $columns; $y++}
+								<td {ifset $lines[$x][$y]}class="active"{/ifset}>
+									<div class="cell"></div>
+								</td>
+								{/for}
+							</tr>
+						{/for}
+						</table>
+						<a href="{link deleteLine! $key}" class="delete-line-button"><i class="fa fa-times"></i></a>
+					</div>
+				</div>
+				{/snippet}
+
+                </div><!-- /.box-body -->
+            </div><!-- /.box -->
+        </div>
+    </div>
+				
+<div id="new-line-modal" class="modal fade" tabindex="-1" role="dialog">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-label="Zatvoriť"><span aria-hidden="true">&times;</span></button>
+				<h4 class="modal-title">Definícia novej línie</h4>
+			</div>
+			<div class="modal-body">
+				<table class="line-box-table new-line center">
+					{for $x = 0; $x < $rows; $x++}
+						<tr>
+							{for $y = 0; $y < $columns; $y++}
+							<td data-row="{$x}" data-col="{$y}" data-columns="{$columns}">
+								<div class="cell"></div>
+							</td>
+							{/for}
+						</tr>
+					{/for}
+				</table>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-default" data-dismiss="modal">Zatvoriť</button>
+				<button id="create-new-line" type="button" class="btn btn-primary" data-link="{link addNewLine!}">Vytvoriť</button>
+			</div>
+		</div><!-- /.modal-content -->
+	</div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+<div id="editNoteModal" class="modal fade" tabindex="-1" role="dialog">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-label="Zatvoriť"><span aria-hidden="true">&times;</span></button>
+				<h4 class="modal-title">Poznámka k hre</h4>
+			</div>
+			<div class="modal-body">
+				<input type="text" value="{$game['note']}" name="note" class="form-control">
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-default" data-dismiss="modal">Zatvoriť</button>
+				<button id="add-note-button" type="button" class="btn btn-primary" data-link="{link saveNote!}">Uložiť</button>
+			</div>
+		</div><!-- /.modal-content -->
+	</div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+</section><!-- /.content -->
+{/block}
+
+{block script}
+<script>
+$(document).ready(function() {
+	$(document).on("click", ".line-box-table.new-line td", function() {
+		if ($(this).hasClass("active")) {
+			$(this).removeClass("active");
+		} else {
+			$(this).addClass("active");
+		}
+	});
+	
+	$(document).on("click", "#create-new-line", function() {
+		var link = $(this).data("link");
+		var slotBoxes = $(".line-box-table.new-line td.active");
+		var slots = [];
+		
+		slotBoxes.each(function() {
+			var slotIndex = $(this).data("row") * $(this).data("columns") + $(this).data("col");
+			slots.push(slotIndex);
+		});
+		
+		if (slots.length == 0) {
+			return;
+		}
+		
+		$.nette.ajax({
+			url: link,
+			method: "post",
+			data: { line: slots }
+		});
+	});
+	
+	$(document).on("click", ".delete-line-button", function(e) {
+		e.preventDefault();
+		
+		var link = this.href;
+		$.nette.ajax(link).done(function () {
+			$("input[type='checkbox']").iCheck({
+				checkboxClass: 'icheckbox_minimal',
+				radioClass: 'iradio_minimal'
+			});
+		});
+	});
+	
+	$(document).on("click", "#add-note-button", function(e) {
+		e.preventDefault();
+		var link = $(this).data("link");
+		
+		$.nette.ajax({
+			url: link,
+			data: { note: $("input[name=note]").val() }
+		});
+		
+		$("#editNoteModal").modal("toggle");
+	});
+});
+</script>
+{/block}

@@ -1,0 +1,115 @@
+<?php
+
+namespace App;
+
+use Model\GameModel;
+use Model\WinsModel;
+
+class IndexPresenter extends BasePresenter {
+	/** @var WinsModel @inject */
+	public $winsModel;
+	/** @var GameModel @inject */
+	public $gameModel;
+	
+	private $stat_data = array(
+		"betcount" => "Počet stávok",
+		"wincount" => "Počet výhier",
+		"totalbets" => "Celkovo stávok",
+		"totalwins" => "Celkovo výhier",
+		"winchance" => "Pravdepodobnosť výhry",
+		"realpayout" => "Skutočná výhernosť",
+		"desiredpayout" => "Požadovaná výhernosť"
+	);
+	
+	public function handleRestartGenerators()
+	{
+		$command = "sudo /var/www/AGSS1/scripts/restart_generators.sh";
+		$output = $code = "";
+		
+		// restarts all game generators
+		exec($command, $output, $code);
+		
+		if ($code == 0) {
+			$this->flashMessage("Generátory boli úspešne reštartované.", "success");
+			$this->logModel->save("restart_generators_success", null, $this->getUser()->getId(), $this->getUser()->getIdentity()->username);
+		} else {
+			$this->flashMessage("Pri reštartovaní generátorov nastala chyba.", "danger");
+			$this->logModel->save("restart_generators_failure", null, $this->getUser()->getId(), $this->getUser()->getIdentity()->username);
+		}
+		
+		$this->redirect("this");
+	}
+	public function handlestopGenerators()
+        {
+                $command = "sudo systemctl stop Generator*";
+                $output = $code = "";
+
+                // stop all game generators
+                exec($command, $output, $code);
+
+                if ($code == 0) {
+                        $this->flashMessage("Generátory boli úspešne zastavene.", "success");
+                        $this->logModel->save("restart_generators_success", null, $this->getUser()->getId(), $this->getUser()->getIdentity()->username);
+                } else {
+                        $this->flashMessage("Pri zastavovani generátorov nastala chyba.", "danger");
+                        $this->logModel->save("restart_generators_failure", null, $this->getUser()->getId(), $this->getUser()->getIdentity()->username);
+                }
+
+                $this->redirect("this");
+        }
+
+	public function renderDefault()
+	{
+		$this->template->winningRate = $this->winsModel->getTotalWinningRate();
+		
+		// finds statuses of game generators
+		$output = $code = "";
+		exec("ps ax -o cmd | grep -i generator", $output, $code);
+		
+		$games = $this->gameModel->findGameNames();
+		$statuses = array();
+		
+		if ($code == 0) {
+			$processes = implode(" ", $output);
+			
+			foreach ($games as $game) {
+				if (strpos($processes, $game) !== false) {
+					$statuses[$game] = "OK";
+				} else {
+					$statuses[$game] = "CHYBA";
+				}
+			}
+		}
+		
+		// receives game statistics from generators
+		$stats = array();
+		foreach ($games as $gameId => $game) {
+			$output = "";
+			$genProcessPort = 12000 + $gameId;
+			$command = "(echo 'stats\n\n\n'; sleep 0.1) | nc 127.0.0.1 {$genProcessPort}";
+			exec($command, $output, $code);
+			
+			if ($code == 0) {
+				$stats[$game] = array();
+				
+				foreach ($output as $row) {
+					foreach ($this->stat_data as $statName => $statValue) {
+						if (strpos($row, $statName) !== false) {
+							$value = trim(str_replace($statName, "", $row));
+							if ($statName == "totalbets" || $statName == "totalwins") {
+								$value /= 100;
+							}
+							
+							$stats[$game][$statName] = $value;
+						}
+					}
+				}
+			}
+		}
+		
+		$this->template->generatorStatuses = $statuses;
+		$this->template->gameStats = $stats;
+		$this->template->statData = $this->stat_data;
+		$this->template->totalSpins = $this->winsModel->getTotalSpinCount();
+	}
+}

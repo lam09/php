@@ -1,0 +1,107 @@
+{block content}
+<!-- Content Header (Page header) -->
+<section class="content-header">
+	<h1>
+		Dashboard
+		<small>Ovládací panel</small>
+	</h1>
+	<ol class="breadcrumb">
+		<li><a href="#"><i class="fa fa-dashboard"></i> AGSS</a></li>
+		<li class="active">Dashboard</li>
+	</ol>
+</section>
+
+<!-- Main content -->
+<section class="content">
+	<!-- Small boxes (Stat box) -->
+	<div class="row">
+		<div class="col-lg-12">
+			{include '../flashes.latte'}
+		</div>
+		
+		<div class="col-lg-3 col-xs-6">
+			<!-- small box -->
+			<div class="small-box bg-aqua">
+				<div class="inner">
+					<h3>
+						{$winningRate|formatFloat} %
+					</h3>
+					<p>
+						Celková výhernosť
+					</p>
+				</div>
+				<div class="icon">
+					<i class="ion ion-bag"></i>
+				</div>
+			</div>
+					
+			<div class="small-box bg-orange">
+				<div class="inner">
+					<h3>
+						{$totalSpins->count|formatFloat}
+					</h3>
+					<p>
+						Počet odohratých hier
+					</p>
+				</div>
+				<div class="icon">
+					<i class="ion ion-bag"></i>
+				</div>
+			</div>
+		</div>
+		
+		<div class="col-lg-3">
+			<div class="box box-solid">
+				<div class="box-header">
+					<i class="fa fa-cogs"></i>
+					<h3 class="box-title">Generátory</h3>
+				</div><!-- /.box-header -->
+				<div class="box-body clearfix">
+					<dl class="dl-horizontal">
+						{foreach $generatorStatuses as $key => $status}
+						<dt>{$key}</dt>
+						<dd {if $status == 'OK'}style="color:green"{else}style="color:red"{/if}>{$status}</dd>
+						{/foreach}
+					</dl>
+					
+					<a href="{link restartGenerators!}" class="btn btn-primary pull-right">Reštartovať generátory</a>
+					<br />
+					<br />
+					<a href="{link stopGenerators!}" class="btn btn-primary pull-right">Zastaviť generátory</a>
+				</div><!-- /.box-body -->
+			</div>
+		</div>
+
+		<div class="col-lg-12">
+			<div n:foreach="$gameStats as $game => $stats" class="col-lg-3">
+				<div class="box box-solid">
+					<div class="box-header">
+						<i class="fa fa-cogs"></i>
+						<h3 class="box-title">Štatistiky pre hru {$game}</h3>
+					</div><!-- /.box-header -->
+					<div class="box-body clearfix">
+						<dl class="dl-horizontal">
+						{foreach $stats as $statName => $statValue}
+							<dt>{$statData[$statName]}</dt>
+							<dd>
+								{if $statName == 'totalbets' || $statName == 'totalwins'}
+									{$statValue|formatFloat} €
+								{elseif $statName == 'winchance'}
+									{$statValue * 100|formatFloat} %
+								{elseif $statName == 'realpayout' || $statName == 'desiredpayout'}
+									{$statValue|formatFloat} %
+								{else}
+									{$statValue|formatFloat}
+								{/if}
+							</dd>
+						{/foreach}
+						</dl>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div><!-- /.row -->
+</section><!-- /.content -->
+{/block}
+{block script}
+{/block}

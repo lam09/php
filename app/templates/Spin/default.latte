@@ -1,0 +1,130 @@
+{block content}
+<section class="content-header">
+	<h1>Posledné hry</h1>
+	<ol class="breadcrumb">
+		<li><a href="#"><i class="fa fa-dashboard"></i> AGSS</a></li>
+	</ol>
+</section>
+
+<section class="content">
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="box">
+				<div class="box-header">
+					<h3 class="box-title">
+						Stroj: {$machine->description}, hra: {$games[$gameId]}
+					</h3>
+					<div class="game-selector pull-right">
+						<span style="padding: 0 15px">
+							<span id="reportrange" value="{link default $machine->id, $gameId, $limit, $start, $end}" style="background: #fff; cursor: pointer; padding: 5px 10px; border: 1px solid #ccc; width:300px; display:inline-block; ">
+								<i class="glyphicon glyphicon-calendar fa fa-calendar"></i>&nbsp;
+								<span>{$start} - {$end}</span>
+								<b class="fa fa-caret-down down"></b>
+							</span>
+						</span>
+					    <select id="limit" onchange="window.location = $(this).find('option:selected').last().val()" >
+                            <option n:foreach="$limits as $a => $limit" value="{link default $machine->id, $gameId, $limit, $start, $end}"{if $limits[$a] == $selected}selected{/if}>{$limits[$a]}</option>
+                            <option value="{link default $machine->id, $gameId, $all}"{if 2000 == $selected}selected{/if}>all</option>
+                        </select>
+						<span style="padding:0 10px">na stránke</span>
+						<select id="machine" onchange="window.location = $(this).find('option:selected').val()">
+							<option n:foreach="$machines as $row" value="{link default $row->id, $gameId,$limit, $start, $end}" {if $row->id == $machine->id}selected{/if}>{$row->description}</option>
+						</select>
+						<select id="game" onchange="window.location = $(this).find('option:selected').val()">
+							<option n:foreach="$games as $gid => $gameName" value="{link default $machine->id, $gid, $limit, $start, $end}" {if $gid == $gameId}selected{/if}>{$gameName}</option>
+						</select>
+					</div>
+				</div>
+                <div class="box-body clearfix">
+					<table class="table table-bordered">
+                        <tr style="width:100%; padding: 10px 0 !important; text-align: center;border-bottom:2px solid grey;">
+                            <th style="width:2%;padding: 10px 0 !important;text-align: center;">#</th>
+                            <th style="width:8%;padding: 10px 0 !important;text-align: center;">Dátum</th>
+                            <th style="width:2%;padding: 10px 0 !important;text-align: center;">Hráč</th>
+                            <th style="width:5%;padding: 10px 0 !important;text-align: center;">Typ hry</th>
+                            <th style="width:3%;padding: 10px 0 !important;text-align: center;"># Bonus</th>
+                            <th style="width:5%;padding: 10px 0 !important;text-align: center;">Kredit</th>
+                            <th style="width:5%;padding: 10px 0 !important;text-align: center;">Stávka</th>
+                            <th style="width:5%;padding: 10px 0 !important;text-align: center;">Celková výhra</th>
+                            <th style="width:5%;padding: 10px 0 !important;text-align: center;">Čiastková výhra</th>
+                            <th style="width:5%;padding: 10px 0 !important;text-align: center;">Osobný bonus</th>
+                            <th style="width:10%;padding: 10px 0 !important;text-align: center;">Symboly</th>
+                            <th style="width:10%;padding: 10px 0 !important;text-align: center;">Výh. línie</th>
+                            <th style="width:10%;padding: 10px 0 !important;text-align: center;">Bonusy</th>
+                        </tr>
+                    </table>
+                    <table n:foreach="$spins as $spin" class="table table-bordered" style="border-bottom:2px solid grey;">
+						<tr style="width:100%; padding: 10px 0 !important; text-align: center;">
+							<td style="width:2%;padding: 10px 0 !important;">{$iterator->counter}.</td>
+							<td style="width:8%;padding: 10px 0 !important;">{$spin->time|date:'d.m.Y H:i:s'}</td>
+							<td style="width:2%;padding: 10px 0 !important;">{$spin->user}</td>
+							<td style="width:5%;padding: 10px 0 !important;">{$spin->type}</td>
+							<td style="width:3%;padding: 10px 0 !important;font-weight:bold;">{$spin->extra_status}</td>
+							<td style="width:5%;padding: 10px 0 !important;">{$spin->credit|formatFloat}</td>
+							<td style="width:5%;padding: 10px 0 !important;">{$spin->bet|formatFloat}</td>
+							<td style="width:5%;padding: 10px 0 !important;">{$spin->change|formatFloat}</td>
+							<!-- ciastkova vyhra -->
+							<td style="width:5%;padding: 10px 0 !important;">
+							    {foreach $spin->lineWinnings as $lineWinning}
+								    {$lineWinning|formatFloat}<br>
+								{/foreach}
+							</td>
+							<td style="width:5%;padding: 10px 0 !important;">{$spin->bonus/100.0|formatFloat}</td>
+							<td style="width:10%;padding: 10px 0 !important;">
+								{foreach $values[$spin->id] as $row}
+									{foreach $row as $symbol}
+										<img src="{$basePath}/img/game-symbols/{$games[$gameId]}/{$symbol}.png" style="width: 30px">
+									{/foreach}
+									<br>
+								{/foreach}
+							</td>
+							<td style="width:10%;padding: 10px 0 !important;">
+								{$winnings[$spin->id]|noescape}
+							</td>
+							<td style="width:10%;padding: 10px 0 !important;">
+								{$spin->bonuses}
+							</td>
+						</tr>
+						<!-- block -->
+						{if $spin->extra_status > 0}
+                            {foreach $spin->extra_game_values as $eg}
+                                 <tr style="width:100%; padding: 10px 0 !important; text-align: center;">
+                                     <td></td>
+                                     <td></td>
+                                     <td></td>
+                                     <td style="color:grey;">extra</td>
+                                     <td style="color:grey;">{$iterator->counter}.</td>
+                                     <td>{$spin->id}</td>
+                                     <td style="color:grey;">0.00</td>
+                                     <td>{$spin->extra_game_win[$iterator->counter-1]/100.0|formatFloat}</td>
+                                     <td>{$spin->extra_game_linewinnings[$iterator->counter-1]/100.0|formatFloat}</td>
+                                     <td>{$spin->extra_game_bonus[$iterator->counter-1]/100.0|formatFloat}</td>
+                                     <td>
+                                        {foreach $spin->extra_game_values[$iterator->counter-1] as $row}
+                                            {foreach $row as $symbol}
+                                                <img src="{$basePath}/img/game-symbols/{$games[$gameId]}/{$symbol}.png" style="width: 30px">
+                                            {/foreach}
+                                            <br>
+                                        {/foreach}
+                                     </td>
+                                     <td>
+                                     {$spin->egwx[$iterator->counter-1]|noescape}
+                                     </td>
+                                </tr>
+                            {/foreach}
+                        {/if}
+                        <!-- block -->
+					</table>
+					<table>
+						<tr>
+							<td>Page : {$paginator->page}</td>
+							<td>Pages : {$paginator->pageCount}</td>
+						</tr>
+					</table>
+				</div>
+			</div>
+		</div>
+	</div>
+</section>
+
+{block script}{/block}

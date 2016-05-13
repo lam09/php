@@ -1,0 +1,47 @@
+#
+# SECURITY WARNING: it is CRITICAL that this file & directory are NOT accessible directly via a web browser!
+#
+# If you don't protect this directory from direct web access, anybody will be able to see your passwords.
+# http://nette.org/security-warning
+#
+parameters:
+	smtp:
+		host: 10.10.5.91
+		username: msww1s
+		password: Metrum11
+#		Pri zapnutom sifrovani treba odkomentovat ! Podporuje SSL a TLS
+#		secure: ssl 
+php:
+	date.timezone: Europe/Prague
+	# zlib.output_compression: yes	
+
+nette:
+	database:
+		default:
+			dsn: 'mysql:host=10.0.5.71;dbname=agss'
+			user: slotgame
+			password: jdhj45sd5f4
+	application:
+		debugger: true
+		errorPresenter: Error
+		mapping:
+			*: App\*Module\*Presenter
+	session:
+		expiration: 14 days
+		autoStart: true
+		save_path: "%tempDir%/sessions"
+
+services:
+	- Model\UserManager
+	- App\RouterFactory
+
+	nastavenieModel: Model\NastavenieModel
+	linesModel: Model\LinesModel
+	winsModel: Model\WinsModel
+	gameModel: Model\GameModel
+	symbolModel: Model\SymbolModel
+	wintableModel: Model\WintableModel
+	machineModel: Model\MachineModel
+	logModel: Model\LogModel
+	userModel: Model\UserModel
+	router: @App\RouterFactory::createRouter

@@ -1,0 +1,75 @@
+{block content}
+<section class="content-header">
+	<h1>Používatelia</h1>
+	<ol class="breadcrumb">
+		<li><a href="#"><i class="fa fa-dashboard"></i> AGSS</a></li>
+	</ol>
+</section>
+
+<section class="content">
+    <div class="row">
+        <div class="col-lg-12">
+			{include '../flashes.latte'}
+            <div class="box">
+				<div class="box-body clearfix">
+					<a href="#" class="btn btn-primary pull-right margin-b10" data-toggle="modal" data-target="#new-user-modal"><i class="fa fa-plus"></i> Nový používateľ</a>
+					<table class="table table-bordered">
+						<tr>
+							<th>#</th>
+							<th>Meno používateľa</th>
+							<th>Meno</th>
+							<th>Povolenia</th>
+							<th>Akcie</th>
+						</tr>
+						<tr n:foreach="$users as $u">
+							<td>{$u->id}</td>
+							<td>{$u->username}</td>
+							<td>{$u->name}</td>
+							<td>{$roles[$u->role]}</td>
+							<td>
+								<a href="{link deleteUser! $u->id}" title="Odstrániť používateľa"><i class="fa fa-times"></i></a>
+							</td>
+						</tr>
+					</table>
+				</div>
+			</div>
+		</div>
+	</div>
+	
+	<div id="new-user-modal" class="modal fade" tabindex="-1" role="dialog">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal" aria-label="Zatvoriť"><span aria-hidden="true">&times;</span></button>
+					<h4 class="modal-title">Vytvorenie nového používateľa</h4>
+				</div>
+				{form addUserForm}
+				<div class="modal-body">
+					<div class="form-group">
+						{label username /}
+						{input username, class => 'form-control'}
+					</div>
+					<div class="form-group">
+						{label password /}
+						{input password, class => 'form-control'}
+					</div>
+					<div class="form-group">
+						{label name /}
+						{input name, class => 'form-control'}
+					</div>
+					<div class="form-group">
+						{label role /}
+						{input role, class => 'form-control'}
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-default" data-dismiss="modal">Zatvoriť</button>
+					{input submit, class => 'btn btn-primary'}
+				</div>
+				{/form}
+			  </div><!-- /.modal-content -->
+		</div><!-- /.modal-dialog -->
+	</div><!-- /.modal -->
+</section>
+
+{block script}{/block}
